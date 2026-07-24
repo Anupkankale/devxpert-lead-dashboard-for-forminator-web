@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DevXpert Lead Dashboard — Turn Forminator &amp; Contact Form 7 entries into leads</title>
+<meta name="description" content="A free WordPress plugin for Forminator and Contact Form 7. Track leads, set statuses, log sales feedback, and export to CSV — all inside your WordPress admin.">
+<meta name="theme-color" content="#ffffff">
+
+<style>
+/* ============================================================
+   TOKENS — Liquid Glass, light appearance
+   ============================================================ */
+:root{
+  --violet:      #5e17eb;
+  --violet-deep: #3d0d9e;
+  --violet-lift: #8a56ff;
+  --violet-tint: #f3edff;
+  --violet-line: #e2d6ff;
+
+  --gold:      #fabf28;   /* secondary */
+  --gold-lift: #ffd76a;
+  --gold-deep: #dd9d06;
+  --gold-ink:  #3d2a00;
+
+  --ink:   #16121f;
+  --ink-2: rgba(22,18,31,.62);
+  --ink-3: rgba(22,18,31,.42);
+  --hair:  rgba(22,18,31,.08);
+
+  /* the glass material */
+  --glass-fill:   #ffffff;
+  --glass-fill-2: #fbfafc;
+  --glass-edge:   rgba(22,18,31,.09);
+  --glass-blur:   saturate(180%) blur(24px);
+
+  /* specular: light arrives vertically, from above */
+  --spec-top:    inset 0 1px 0 rgba(255,255,255,.9);
+  --spec-bottom: inset 0 -1px 0 rgba(22,18,31,.02);
+  --cast-soft:   0 1px 2px rgba(22,18,31,.04), 0 5px 12px -7px rgba(22,18,31,.14);
+  --cast-deep:   0 1px 3px rgba(22,18,31,.05), 0 12px 24px -12px rgba(22,18,31,.18);
+
+  /* secondary-colour glow, sits under the neutral shadow */
+  --glow:      0 4px 10px -6px rgba(250,191,40,.34);
+  --glow-lift: 0 8px 16px -8px rgba(250,191,40,.5);
+
+  /* concentric enclosure shapes */
+  --r-xs: 12px;
+  --r-sm: 18px;
+  --r-md: 26px;
+  --r-lg: 34px;
+  --r-xl: 44px;
+
+  --sf: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+        "Helvetica Neue", "Segoe UI", system-ui, Roboto, sans-serif;
+  --sf-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*,*::before,*::after{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:rgba(94,23,235,.12); }
+body{
+  margin:0;
+  padding-top:104px;
+  background:#fff;
+  color:var(--ink);
+  font-family:var(--sf);
+  font-size:17px;
+  line-height:1.5;
+  letter-spacing:-.01em;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow-x:clip;
+}
+img{ max-width:100%; display:block; }
+a{ color:inherit; text-decoration:none; }
+p{ margin:0; }
+ul{ margin:0; padding:0; list-style:none; }
+h1,h2,h3{ margin:0; font-weight:700; line-height:1.06; letter-spacing:-.032em; text-wrap:balance; }
+.lede,.feat p,.node span,.step p{ text-wrap:pretty; }
+
+:focus-visible{ outline:3px solid var(--violet); outline-offset:3px; border-radius:10px; }
+
+.wrap{ width:min(1120px, 100% - 40px); margin-inline:auto; }
+.band{ padding:110px 0; }
+
+/* ============================================================
+   THE MATERIAL
+   ============================================================ */
+.glass{
+  background:var(--glass-fill);
+  border:1px solid var(--glass-edge);
+  box-shadow:var(--spec-top), var(--spec-bottom), var(--cast-soft);
+}
+.glass--thin{ background:var(--glass-fill-2); }
+.glass--deep{ box-shadow:var(--spec-top), var(--spec-bottom), var(--cast-deep); }
+
+/* squircle enclosures where the browser can draw them */
+.sq{ border-radius:var(--r-md); }
+@supports (corner-shape: squircle){
+  .sq,.glass,.btn,.appicon,.feat,.panel,.role,.stage__frame,.shot,.card,.node,.cta,.nav__bar,.nav__sheet{ corner-shape:squircle; }
+}
+
+/* ============================================================
+   TYPE
+   ============================================================ */
+.eyebrow{ color:var(--violet); font-size:15px; font-weight:600; letter-spacing:-.01em; }
+.lede{ color:var(--ink-2); font-size:21px; line-height:1.42; letter-spacing:-.015em; font-weight:400; }
+.label{ font-family:var(--sf-mono); font-size:11px; letter-spacing:.02em; text-transform:uppercase; color:var(--ink-3); }
+
+.section-head{ max-width:740px; margin-bottom:56px; }
+.section-head h2{ font-size:clamp(32px,4.8vw,54px); margin:12px 0 18px; }
+.section-head--center{ margin-inline:auto; text-align:center; }
+
+/* ============================================================
+   CONTROLS
+   ============================================================ */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  font-family:var(--sf); font-size:17px; font-weight:500; letter-spacing:-.015em;
+  padding:13px 26px; border-radius:999px; border:.5px solid transparent;
+  cursor:pointer;
+  transition:transform .24s cubic-bezier(.22,1,.36,1), box-shadow .24s ease, background .24s ease;
+}
+.btn:active{ transform:scale(.97); }
+
+.btn--primary{
+  color:#fff;
+  background:linear-gradient(180deg, var(--violet-lift) -10%, var(--violet) 46%, var(--violet-deep) 130%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    inset 0 -2px 6px rgba(0,0,0,.18),
+    0 10px 24px -10px rgba(94,23,235,.75);
+}
+.btn--primary:hover{ transform:translateY(-2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 6px rgba(0,0,0,.18), 0 18px 34px -12px rgba(94,23,235,.8); }
+
+.btn--glass{
+  color:var(--violet);
+  background:#fff;
+  border-color:var(--glass-edge);
+  box-shadow:var(--spec-top), 0 6px 16px -10px rgba(22,18,31,.28);
+}
+.btn--glass:hover{ background:var(--violet-tint); border-color:var(--violet-line); transform:translateY(-2px); }
+
+.btn--gold{
+  color:var(--gold-ink);
+  background:linear-gradient(180deg, var(--gold-lift) -10%, var(--gold) 48%, var(--gold-deep) 130%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.65),
+    inset 0 -2px 6px rgba(90,60,0,.22),
+    0 10px 26px -10px rgba(250,191,40,.9);
+}
+.btn--gold:hover{ transform:translateY(-2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.7), inset 0 -2px 6px rgba(90,60,0,.22), 0 18px 36px -12px rgba(250,191,40,.95); }
+.btn--clear{ color:#fff; background:rgba(255,255,255,.16); border-color:rgba(255,255,255,.4); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px); }
+.btn--clear:hover{ background:rgba(255,255,255,.26); }
+.btn--sm{ font-size:15px; padding:10px 18px; }
+
+/* ============================================================
+   NAV — floating glass capsule + glass menu sheet
+   ============================================================ */
+.nav{ position:fixed; top:14px; left:0; right:0; z-index:100; padding-inline:20px; }
+.navtoggle{ position:absolute; opacity:0; pointer-events:none; }
+
+.nav__bar{
+  width:min(1120px,100%); margin-inline:auto;
+  display:flex; align-items:center; gap:18px;
+  height:60px; padding:0 8px 0 18px;
+  border-radius:999px;
+  background:rgba(255,255,255,.78);
+  -webkit-backdrop-filter:var(--glass-blur);
+  backdrop-filter:var(--glass-blur);
+  border:1px solid var(--glass-edge);
+  box-shadow:var(--spec-top), 0 6px 16px -10px rgba(22,18,31,.26);
+}
+
+.brand{ display:flex; align-items:center; gap:11px; min-height:44px; font-size:16px; font-weight:600; letter-spacing:-.02em; min-width:0; }
+.brand__name{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.nav__cta{ margin-left:8px; flex:none; }
+.brand__mark{
+  width:30px; height:30px; flex:none; border-radius:9px;
+  background:linear-gradient(165deg, var(--violet-lift), var(--violet) 52%, var(--violet-deep));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), inset 0 -3px 8px rgba(0,0,0,.22), 0 4px 10px -3px rgba(94,23,235,.6);
+  display:grid; place-items:center; position:relative; overflow:hidden;
+}
+.brand__mark::after{ content:""; position:absolute; inset:0; background:linear-gradient(155deg, rgba(255,255,255,.55), rgba(255,255,255,.05) 42%, transparent 60%); }
+.brand__mark i{ position:relative; z-index:1; font-style:normal; color:#fff; font-size:12px; font-weight:700; letter-spacing:-.02em; }
+
+.nav__links{ display:flex; align-items:center; gap:4px; margin-left:auto; }
+.nav__links a{
+  font-size:15px; font-weight:500; color:var(--ink-2);
+  padding:8px 14px; border-radius:999px;
+  transition:background .2s ease, color .2s ease;
+}
+.nav__links a:hover{ background:rgba(94,23,235,.09); color:var(--violet); }
+
+.nav__burger{ display:none; width:42px; height:42px; margin-left:auto; border-radius:999px; place-items:center; cursor:pointer; }
+.nav__burger span{ display:block; width:17px; height:1.6px; border-radius:2px; background:var(--ink); transition:transform .3s cubic-bezier(.22,1,.36,1), opacity .2s; }
+.nav__burger span + span{ margin-top:4.6px; }
+.navtoggle:checked ~ .nav__bar .nav__burger span:nth-child(1){ transform:translateY(6.2px) rotate(45deg); }
+.navtoggle:checked ~ .nav__bar .nav__burger span:nth-child(2){ opacity:0; }
+.navtoggle:checked ~ .nav__bar .nav__burger span:nth-child(3){ transform:translateY(-6.2px) rotate(-45deg); }
+
+.nav__sheet{
+  width:min(1120px,100%); margin:10px auto 0;
+  border-radius:var(--r-md); padding:10px;
+  background:rgba(255,255,255,.9);
+  -webkit-backdrop-filter:var(--glass-blur);
+  backdrop-filter:var(--glass-blur);
+  border:1px solid var(--glass-edge);
+  box-shadow:var(--spec-top), var(--cast-deep);
+  display:none;
+  transform-origin:top center;
+  animation:sheetIn .34s cubic-bezier(.22,1,.36,1);
+}
+.nav__sheet a{ display:block; padding:13px 14px; border-radius:var(--r-xs); font-size:17px; font-weight:500; }
+.nav__sheet a:hover{ background:rgba(94,23,235,.09); color:var(--violet); }
+.nav__sheet .btn{ display:flex; width:100%; margin-top:8px; }
+.nav__sheet .btn:hover{ background:linear-gradient(180deg, var(--violet-lift) -10%, var(--violet) 46%, var(--violet-deep) 130%); color:#fff; }
+.navtoggle:checked ~ .nav__sheet{ display:block; }
+@keyframes sheetIn{ from{ opacity:0; transform:translateY(-8px) scale(.98); } to{ opacity:1; transform:none; } }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{ padding:64px 0 0; }
+.hero__grid{ display:grid; grid-template-columns:1.04fr .96fr; gap:58px; align-items:center; }
+.hero__copy,.hero__panel{ min-width:0; }
+.hero h1{ font-size:clamp(40px,5.4vw,64px); letter-spacing:-.038em; margin:16px 0 20px; }
+.hero h1 em{ font-style:normal; background:linear-gradient(180deg, var(--violet-lift), var(--violet) 60%, var(--violet-deep)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.hero .lede{ max-width:50ch; font-size:19.5px; }
+.hero__cta{ display:flex; gap:12px; flex-wrap:wrap; margin:32px 0 0; }
+
+/* segmented glass readout under the card */
+.hero__stats{
+  margin-top:14px; display:grid; grid-template-columns:repeat(3,1fr); overflow:hidden;
+  border-radius:var(--r-md);
+  background:#fff;
+  border:1px solid var(--glass-edge);
+  box-shadow:var(--spec-top), var(--cast-soft), var(--glow);
+}
+.stat{ padding:17px 12px; text-align:center; border-left:.5px solid var(--hair); }
+.stat:first-child{ border-left:0; }
+.stat b{
+  display:block; font-size:27px; font-weight:700; letter-spacing:-.035em; line-height:1.1;
+  background:linear-gradient(180deg, var(--violet-lift), var(--violet) 65%, var(--violet-deep));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.stat small{ font-size:12.5px; color:var(--ink-3); letter-spacing:-.005em; }
+
+/* stage: the dashboard shot, its own band under the hero */
+.stage{ margin-top:96px; }
+
+/* origin story */
+.story{ border-radius:var(--r-xl); padding:58px 56px; }
+.story h2{ font-size:clamp(28px,3.7vw,44px); margin:12px 0 20px; max-width:20ch; }
+.story .lede{ max-width:64ch; }
+.story .btn{ margin-top:26px; }
+.story__by{ margin-top:28px; font-size:15.5px; color:var(--ink-2); letter-spacing:-.012em; }
+.story__by a{ color:var(--violet); font-weight:500; }
+.story__by a:hover{ text-decoration:underline; }
+.story__p + .story__p{ margin-top:18px; }
+.outcomes{ display:flex; flex-wrap:wrap; gap:10px; margin-top:30px; }
+.outcome{
+  display:inline-flex; align-items:center; gap:9px;
+  font-size:15px; letter-spacing:-.012em; color:var(--ink);
+  border-radius:999px; padding:8px 18px 8px 9px;
+  background:#fff;
+  border:1px solid var(--glass-edge);
+  box-shadow:var(--cast-soft);
+}
+.outcome i{
+  width:20px; height:20px; flex:none; border-radius:50%; display:grid; place-items:center;
+  background:linear-gradient(180deg, var(--gold-lift), var(--gold) 60%, var(--gold-deep));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 3px 7px -2px rgba(250,191,40,.95);
+}
+.outcome i svg{ width:10px; height:10px; fill:none; stroke:var(--gold-ink); stroke-width:2.8; stroke-linecap:round; stroke-linejoin:round; }
+.stage__frame{
+  padding:14px; border-radius:var(--r-xl);
+  background:#fff;
+  border:1px solid var(--glass-edge);
+  box-shadow:var(--spec-top), var(--spec-bottom), var(--cast-deep);
+}
+
+/* ============================================================
+   LEAD CARD
+   ============================================================ */
+.card{
+  border-radius:var(--r-lg); padding:20px;
+  background:#fff;
+  border:1px solid var(--glass-edge);
+  box-shadow:var(--spec-top), var(--cast-deep), var(--glow-lift);
+  text-align:left;
+}
+.card__top{ display:flex; align-items:center; gap:12px; padding-bottom:15px; border-bottom:.5px solid var(--hair); }
+.avatar{
+  width:40px; height:40px; flex:none; border-radius:13px;
+  background:linear-gradient(165deg, var(--violet-lift), var(--violet) 55%, var(--violet-deep));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55), inset 0 -4px 9px rgba(0,0,0,.2), 0 5px 12px -4px rgba(94,23,235,.6);
+  display:grid; place-items:center; color:#fff; font-size:13px; font-weight:600; letter-spacing:-.02em;
+}
+.card__name{ font-size:16px; font-weight:600; letter-spacing:-.02em; }
+.card__form{ font-size:13px; color:var(--ink-3); }
+
+.statusbox{ margin-left:auto; position:relative; width:112px; height:29px; }
+.pill{
+  position:absolute; inset:0; display:grid; place-items:center;
+  font-size:12px; font-weight:600; letter-spacing:-.01em;
+  border-radius:999px; opacity:0;
+  animation:cycle 9s infinite;
+}
+.pill--new{
+  color:var(--gold-ink);
+  background:linear-gradient(180deg, var(--gold-lift), var(--gold) 60%, var(--gold-deep));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 6px 14px -6px rgba(250,191,40,.95);
+  animation-delay:0s;
+}
+.pill--follow{ background:rgba(94,23,235,.10); color:var(--violet); box-shadow:inset 0 0 0 1.4px rgba(94,23,235,.55); animation-delay:3s; }
+.pill--convert{
+  color:#fff;
+  background:linear-gradient(180deg, var(--violet-lift), var(--violet) 55%, var(--violet-deep));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45), 0 6px 14px -6px rgba(94,23,235,.8);
+  animation-delay:6s;
+}
+@keyframes cycle{
+  0%  { opacity:0; transform:translateY(5px) scale(.94); }
+  5%  { opacity:1; transform:none; }
+  30% { opacity:1; transform:none; }
+  36% { opacity:0; transform:translateY(-5px) scale(.94); }
+  100%{ opacity:0; transform:translateY(5px) scale(.94); }
+}
+
+.rows{ display:grid; padding:14px 0; margin:0; }
+.row{ display:flex; gap:14px; align-items:baseline; padding:6px 0; }
+.row dt{ width:82px; flex:none; }
+.row dd{ margin:0; font-size:14.5px; letter-spacing:-.01em; }
+
+.note{ border-radius:var(--r-sm); padding:13px 15px; background:rgba(94,23,235,.07); box-shadow:inset 0 0 0 .5px var(--violet-line), inset 0 1px 0 rgba(255,255,255,.7); }
+.note__who{ font-size:12px; font-weight:600; color:var(--violet); }
+.note p{ font-size:14.5px; margin-top:4px; letter-spacing:-.01em; }
+
+/* ============================================================
+   ICON COMPOSER STYLE APP ICONS
+   layer 1 base gradient · layer 2 refraction · layer 3 specular · glyph on top
+   ============================================================ */
+.appicon{
+  width:52px; height:52px; border-radius:15px; position:relative; overflow:hidden;
+  display:grid; place-items:center; flex:none;
+  background:linear-gradient(168deg, var(--violet-lift) 0%, var(--violet) 48%, var(--violet-deep) 100%);
+  box-shadow:
+    inset 0 1.2px 0 rgba(255,255,255,.6),
+    inset 0 -8px 16px rgba(20,0,60,.28),
+    inset 0 0 0 .5px rgba(255,255,255,.35),
+    0 8px 18px -6px rgba(94,23,235,.6),
+    0 2px 4px rgba(38,16,84,.18);
+  transition:transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s ease;
+}
+/* refraction: light bending through the top-left shoulder */
+.appicon::before{
+  content:""; position:absolute; inset:0;
+  background:
+    radial-gradient(120% 90% at 20% -10%, rgba(255,255,255,.55), rgba(255,255,255,.08) 46%, transparent 62%),
+    radial-gradient(100% 80% at 90% 120%, rgba(0,0,0,.22), transparent 55%);
+}
+/* specular: crisp highlight defining the upper edge */
+.appicon::after{
+  content:""; position:absolute; left:14%; right:14%; top:2.5px; height:9px;
+  border-radius:999px;
+  background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,0));
+  filter:blur(1.5px);
+}
+.appicon .ico{ position:relative; z-index:2; }
+
+.ico{
+  width:25px; height:25px; display:block;
+  fill:none; stroke:#fff; stroke-width:1.7;
+  stroke-linecap:round; stroke-linejoin:round;
+  filter:drop-shadow(0 1px 1px rgba(20,0,60,.35));
+}
+.ico .solid{ fill:rgba(255,255,255,.36); stroke:none; }
+.ico .dot{ fill:var(--gold); stroke:none; }   /* secondary layer: the new / incoming marker */
+
+/* ============================================================
+   IMAGE PLACEHOLDERS
+   ============================================================ */
+.shot{
+  position:relative; border-radius:var(--r-lg); overflow:hidden;
+  aspect-ratio:16/9; display:grid; place-items:center; text-align:center; padding:24px;
+  background:
+    radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,.9), rgba(255,255,255,.35)),
+    linear-gradient(160deg, rgba(94,23,235,.10), rgba(138,86,255,.05));
+  box-shadow:inset 0 0 0 1px rgba(94,23,235,.12), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.shot--wide{ aspect-ratio:2.1/1; }
+.stage__frame img{ width:100%; border-radius:var(--r-lg); display:block; }
+.feat__shot{ width:100%; border-radius:var(--r-md); display:block; box-shadow:0 1px 2px rgba(38,16,84,.08), 0 18px 40px -24px rgba(38,16,84,.4), inset 0 0 0 .5px rgba(255,255,255,.6); }
+.feat--flip > div:first-child{ order:2; }
+.shot--tall{ aspect-ratio:4/3; }
+.shot__label{ font-family:var(--sf-mono); font-size:12.5px; color:var(--violet); margin-top:12px; }
+.shot__hint{ font-size:13.5px; color:var(--ink-3); margin-top:3px; }
+.shot__tag{
+  position:absolute; top:14px; left:14px;
+  font-size:11px; font-weight:600; letter-spacing:-.005em;
+  background:rgba(94,23,235,.12); color:var(--violet);
+  padding:5px 11px; border-radius:999px;
+  box-shadow:inset 0 0 0 .5px var(--violet-line);
+}
+
+/* ============================================================
+   COMPARISON
+   ============================================================ */
+.compare{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.panel{ border-radius:var(--r-lg); padding:34px; }
+.panel h3{ font-size:24px; margin:12px 0 20px; letter-spacing:-.028em; }
+.panel li{ display:flex; gap:12px; padding:11px 0; font-size:16px; color:var(--ink-2); border-top:.5px solid var(--hair); letter-spacing:-.012em; }
+.panel li:first-of-type{ border-top:0; }
+.tick{ flex:none; width:21px; height:21px; border-radius:50%; display:grid; place-items:center; margin-top:1px; }
+.tick--no{
+  color:var(--gold-ink);
+  background:linear-gradient(180deg, var(--gold-lift), var(--gold) 60%, var(--gold-deep));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 3px 7px -2px rgba(250,191,40,.9);
+}
+.tick--yes{
+  color:#fff;
+  background:linear-gradient(180deg, var(--violet-lift), var(--violet) 55%, var(--violet-deep));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 4px 9px -3px rgba(94,23,235,.75);
+}
+.tick svg{ width:11px; height:11px; }
+
+/* ============================================================
+   FEATURES
+   ============================================================ */
+.features{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.feat{
+  border-radius:var(--r-lg); padding:30px;
+  box-shadow:var(--spec-top), var(--cast-soft), var(--glow);
+  transition:transform .34s cubic-bezier(.22,1,.36,1), box-shadow .34s ease, border-color .34s ease;
+}
+.feat:hover{
+  transform:translateY(-6px);
+  border-color:rgba(250,191,40,.45);
+  box-shadow:var(--spec-top), var(--cast-deep), var(--glow-lift);
+}
+.feat:hover .appicon{ transform:scale(1.06) rotate(-2deg); }
+.feat h3{ font-size:21px; margin:20px 0 9px; letter-spacing:-.026em; }
+.feat p{ font-size:16px; color:var(--ink-2); letter-spacing:-.012em; }
+.feat--wide{ grid-column:span 2; display:grid; grid-template-columns:1fr 1.05fr; gap:28px; align-items:center; }
+
+/* ============================================================
+   STATUS PIPELINE
+   ============================================================ */
+.spine{ display:grid; grid-template-columns:repeat(6,1fr); border-radius:var(--r-lg); overflow:hidden; }
+.node{ padding:28px 22px; border-left:.5px solid var(--hair); position:relative; }
+.node:first-child{ border-left:0; }
+.node::before{ content:""; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--violet-lift), var(--violet)); }
+.node b{ display:flex; align-items:center; gap:9px; font-size:18px; font-weight:600; letter-spacing:-.025em; margin-bottom:7px; }
+.node span{ font-size:14.5px; color:var(--ink-2); letter-spacing:-.012em; }
+.node i{
+  width:10px; height:10px; flex:none; border-radius:50%;
+  background:linear-gradient(180deg, var(--violet-lift), var(--violet));
+  box-shadow:inset 0 .5px 0 rgba(255,255,255,.7), 0 2px 5px -1px rgba(94,23,235,.7);
+}
+.node--end::before{ background:rgba(94,23,235,.22); }
+.node--end i{ background:rgba(255,255,255,.9); box-shadow:inset 0 0 0 2.2px var(--violet); }
+/* unworked leads carry the secondary colour */
+.node--new::before{ background:linear-gradient(90deg, var(--gold-lift), var(--gold)); }
+.node--new i{ background:linear-gradient(180deg, var(--gold-lift), var(--gold)); box-shadow:inset 0 .5px 0 rgba(255,255,255,.85), 0 2px 5px -1px rgba(250,191,40,.95); }
+
+/* ============================================================
+   ROLES
+   ============================================================ */
+.roles{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.role{ border-radius:var(--r-lg); padding:36px; }
+.role--focus{
+  color:#fff; border:.5px solid rgba(255,255,255,.28);
+  background:linear-gradient(160deg, var(--violet-lift) -20%, var(--violet) 45%, var(--violet-deep) 115%);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.45), inset 0 -20px 40px rgba(20,0,60,.25), var(--cast-deep);
+}
+.role h3{ font-size:28px; margin:12px 0 14px; letter-spacing:-.03em; }
+.role p{ font-size:16.5px; color:var(--ink-2); letter-spacing:-.014em; }
+.role--focus .eyebrow{ color:rgba(255,255,255,.72); }
+.role--focus p{ color:rgba(255,255,255,.82); }
+.role ul{ margin-top:22px; display:grid; gap:11px; }
+.role li{ font-size:16px; padding-left:24px; position:relative; color:var(--ink-2); letter-spacing:-.012em; }
+.role--focus li{ color:rgba(255,255,255,.92); }
+.role li::before{
+  content:""; position:absolute; left:0; top:.52em;
+  width:7px; height:7px; border-radius:50%; background:var(--violet);
+}
+.role--focus li::before{ background:rgba(255,255,255,.9); }
+
+/* ============================================================
+   INSTALL
+   ============================================================ */
+.steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+.step{ border-radius:var(--r-lg); padding:28px; }
+.step__n{
+  width:34px; height:34px; border-radius:11px; display:grid; place-items:center;
+  font-size:14px; font-weight:600; color:#fff; margin-bottom:18px;
+  background:linear-gradient(168deg, var(--violet-lift), var(--violet) 55%, var(--violet-deep));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55), inset 0 -4px 8px rgba(20,0,60,.25), 0 5px 12px -4px rgba(94,23,235,.6);
+}
+.step h3{ font-size:19px; margin-bottom:9px; letter-spacing:-.026em; }
+.step p{ font-size:15.5px; color:var(--ink-2); letter-spacing:-.012em; }
+.step code{ font-family:var(--sf-mono); font-size:13px; background:rgba(94,23,235,.09); color:var(--violet); padding:2px 7px; border-radius:7px; }
+
+.reqs{ display:flex; flex-wrap:wrap; gap:10px; margin-top:26px; }
+.req{
+  font-size:14.5px; color:var(--ink-2); letter-spacing:-.012em;
+  border-radius:999px; padding:9px 18px;
+  background:#fff;
+  border:1px solid var(--glass-edge);
+  box-shadow:var(--cast-soft);
+}
+.req b{ color:var(--ink); font-weight:600; }
+
+/* ============================================================
+   CTA + FOOTER
+   ============================================================ */
+.cta{
+  border-radius:var(--r-xl); padding:84px 44px; text-align:center; color:#fff;
+  position:relative; overflow:hidden;
+  background:linear-gradient(155deg, var(--violet-lift) -25%, var(--violet) 42%, var(--violet-deep) 115%);
+  border:.5px solid rgba(255,255,255,.24);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.5), inset 0 -40px 80px rgba(20,0,60,.3), var(--cast-deep);
+}
+.cta::after{
+  content:""; position:absolute; left:8%; right:8%; top:3px; height:26px; border-radius:999px;
+  background:linear-gradient(180deg, rgba(255,255,255,.5), transparent);
+  filter:blur(9px);
+}
+.cta::before{
+  content:""; position:absolute; right:-8%; bottom:-40%; width:60%; height:120%;
+  background:radial-gradient(circle at 50% 50%, rgba(250,191,40,.4), transparent 62%);
+  pointer-events:none;
+}
+.cta > *{ position:relative; z-index:1; }
+.cta h2{ font-size:clamp(32px,5vw,56px); margin:14px 0 18px; letter-spacing:-.035em; }
+.cta .eyebrow{ color:rgba(255,255,255,.75); }
+.cta p{ color:rgba(255,255,255,.85); max-width:52ch; margin-inline:auto; font-size:19px; letter-spacing:-.015em; }
+.cta__row{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:36px; }
+
+.footer{ padding:56px 0 46px; margin-top:110px; }
+.footer__inner{
+  border-radius:var(--r-lg); padding:26px 32px;
+  display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;
+}
+.footer a{ color:var(--violet); font-weight:500; }
+.social{ display:flex; gap:10px; }
+.social__btn{
+  width:42px; height:42px; border-radius:999px; display:grid; place-items:center;
+  background:#fff; border:1px solid var(--glass-edge);
+  box-shadow:var(--spec-top), var(--cast-soft);
+  transition:transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease, border-color .22s ease, background .22s ease;
+}
+.social__btn svg{ width:19px; height:19px; fill:none; stroke:var(--violet); stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; }
+.social__btn--solid svg{ fill:var(--violet); stroke:none; }
+.social__btn:hover{
+  transform:translateY(-2px);
+  background:var(--violet-tint); border-color:var(--violet-line);
+  box-shadow:var(--spec-top), var(--cast-soft), var(--glow);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:980px){
+  .hero__grid{ grid-template-columns:1fr; gap:44px; }
+  .hero .lede{ max-width:58ch; }
+  .stage{ margin-top:72px; }
+  .nav__links{ display:none; }
+  .nav__burger{ display:grid; }
+  .features{ grid-template-columns:repeat(2,1fr); }
+  .feat--wide{ grid-column:span 2; grid-template-columns:1fr; }
+  .feat--flip > div:first-child{ order:0; }   /* text before image once stacked */
+  .spine{ grid-template-columns:repeat(2,1fr); }
+  .node{ border-left:.5px solid var(--hair); border-top:.5px solid var(--hair); }
+  .steps{ grid-template-columns:repeat(2,1fr); }
+  .story{ padding:44px 40px; }
+}
+@media (min-width:981px){ .nav__sheet{ display:none !important; } }
+
+/* large phone */
+@media (max-width:760px){
+  .brand__long{ display:none; }
+  .features,.steps,.spine{ grid-template-columns:1fr; }
+  .feat--wide{ grid-column:span 1; }
+  .node{ border-left:0; border-top:.5px solid var(--hair); }
+  .node:first-child{ border-top:0; }
+}
+
+/* phone */
+@media (max-width:640px){
+  body{ font-size:16px; padding-top:86px; }
+  .wrap{ width:min(1120px, 100% - 32px); }
+  .band{ padding:66px 0; }
+  .section-head{ margin-bottom:36px; }
+  .section-head h2{ font-size:clamp(26px,6.6vw,34px); }
+  .lede{ font-size:18px; }
+
+  .nav{ top:10px; padding-inline:16px; }
+  .nav__bar{ height:56px; padding:0 6px 0 14px; }
+  .brand{ font-size:15px; }
+  .brand__mark{ width:28px; height:28px; border-radius:8px; }
+
+  .hero{ padding:36px 0 0; }
+  .hero__grid{ gap:34px; }
+  .hero h1{ font-size:clamp(31px,8.6vw,42px); }
+  .hero__cta{ gap:10px; margin-top:26px; }
+  .hero__cta .btn{ flex:1 1 100%; }
+
+  .card{ padding:16px; border-radius:var(--r-md); }
+  .card__form{ font-size:12px; }
+  .statusbox{ width:94px; height:27px; }
+  .pill{ font-size:11px; }
+  .row dt{ width:72px; }
+  .row dd{ font-size:14px; }
+  .stat b{ font-size:23px; }
+  .stat small{ font-size:11.5px; }
+
+  .stage{ margin-top:50px; }
+  .stage__frame{ padding:8px; border-radius:var(--r-lg); }
+  .stage__frame img{ border-radius:var(--r-md); }
+
+  .compare,.roles{ grid-template-columns:1fr; }
+  .panel,.role{ padding:26px 22px; }
+  .story{ padding:30px 22px; }
+  .story h2{ font-size:clamp(25px,6.3vw,32px); max-width:none; }
+  .feat,.step{ padding:24px 22px; }
+  .role h3{ font-size:23px; }
+  .outcome{ font-size:14px; }
+  .req{ font-size:13.5px; padding:8px 15px; }
+
+  .cta{ padding:48px 22px; border-radius:var(--r-lg); }
+  .cta h2{ font-size:clamp(26px,6.8vw,36px); }
+  .cta p{ font-size:17px; }
+  .cta__row .btn{ flex:1 1 100%; }
+
+  .footer{ padding:42px 0 34px; margin-top:70px; }
+  .footer__inner{ flex-direction:column; justify-content:center; text-align:center; gap:22px; padding:24px 22px; }
+}
+
+/* narrow phone: the bar CTA moves into the menu */
+@media (max-width:540px){
+  .nav__cta{ display:none; }
+  .social{ gap:8px; }
+  .social__btn{ width:40px; height:40px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  html{ scroll-behavior:auto; }
+  .pill{ opacity:1; }
+  .pill--follow,.pill--convert{ display:none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ============================== MENU ============================== -->
+<header class="nav">
+  <input type="checkbox" id="navtoggle" class="navtoggle" aria-label="Show menu">
+
+  <div class="nav__bar">
+    <a class="brand" href="#top"><span class="brand__mark"><i>LD</i></span><span class="brand__name"><span class="brand__long">DevXpert </span>Lead Dashboard</span></a>
+    <nav class="nav__links">
+      <a href="#features">Features</a>
+      <a href="#statuses">Statuses</a>
+      <a href="#roles">Roles</a>
+      <a href="#install">Install</a>
+    </nav>
+    <a class="btn btn--primary btn--sm nav__cta" href="https://wordpress.org/plugins/devxpert-lead-dashboard-for-forminator/">Get the plugin</a>
+    <label class="nav__burger" for="navtoggle"><span></span><span></span><span></span></label>
+  </div>
+
+  <div class="nav__sheet">
+    <a href="#features">Features</a>
+    <a href="#statuses">Statuses</a>
+    <a href="#roles">Roles</a>
+    <a href="#install">Install</a>
+    <a class="btn btn--primary" href="https://wordpress.org/plugins/devxpert-lead-dashboard-for-forminator/">Get it on WordPress.org</a>
+  </div>
+</header>
+
+<!-- ============================== HERO ============================== -->
+<section class="hero wrap" id="top">
+  <div class="hero__grid">
+
+    <div class="hero__copy">
+      <p class="eyebrow">Free WordPress plugin · Forminator &amp; Contact Form 7</p>
+      <h1>Every form entry is a lead. <em>Treat it like one.</em></h1>
+      <p class="lede">Your form plugin collects the submission. This one gives your sales team the dashboard: statuses, feedback, activity history, filters, and CSV export — without leaving WordPress.</p>
+
+      <div class="hero__cta">
+        <a class="btn btn--primary" href="https://wordpress.org/plugins/devxpert-lead-dashboard-for-forminator/">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M4 16v2.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V16"/></svg>
+          Get it on WordPress.org
+        </a>
+        <a class="btn btn--glass" href="#features">See what's inside</a>
+      </div>
+
+    </div>
+
+    <div class="hero__panel">
+    <article class="card">
+    <div class="card__top">
+    <div class="avatar">PR</div>
+    <div>
+    <div class="card__name">Priya Raut</div>
+    <div class="card__form">Contact form — Pricing page</div>
+    </div>
+    <div class="statusbox" aria-label="Lead status">
+    <span class="pill pill--new">New</span>
+    <span class="pill pill--follow">Follow up</span>
+    <span class="pill pill--convert">Converted</span>
+    </div>
+    </div>
+
+    <dl class="rows">
+    <div class="row"><dt class="label">Email</dt><dd>priya@brightwave.in</dd></div>
+    <div class="row"><dt class="label">Phone</dt><dd>+91 98200 41xxx</dd></div>
+    <div class="row"><dt class="label">Budget</dt><dd>₹1,50,000 – ₹3,00,000</dd></div>
+    <div class="row"><dt class="label">Received</dt><dd>2 hours ago</dd></div>
+    </dl>
+
+    <div class="note">
+    <span class="note__who">Sales feedback · positive</span>
+    <p>Called back same day. Wants a demo on Thursday, decision maker is on the call.</p>
+    </div>
+    </article>
+
+      <div class="hero__stats">
+        <div class="stat"><b>1,284</b><small>Total leads</small></div>
+        <div class="stat"><b>37</b><small>New</small></div>
+        <div class="stat"><b>18%</b><small>Converted</small></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================== DASHBOARD SHOT ============================== -->
+<section class="wrap stage">
+  <div class="stage__frame">
+    <img src="images/dashboard.png" alt="The Lead Dashboard running in WordPress: stat cards for total, new, positive and negative leads, a leads-over-time chart, and a leads-by-status donut" width="1888" height="874">
+  </div>
+</section>
+
+<!-- ============================== STORY ============================== -->
+<section class="band">
+  <div class="wrap">
+    <div class="story glass">
+      <p class="eyebrow">Why it exists</p>
+      <h2>A travel agency was losing leads. Fixed without a CRM.</h2>
+      <p class="lede story__p">Enquiries arrived through their Forminator forms every day, then scattered across entries, inboxes, and spreadsheets. Two reps would ring the same person the same afternoon. And when a caller mentioned the Goa package they had asked about yesterday, nobody had anything to look at.</p>
+      <p class="lede story__p">HubSpot and Zoho cost more than a small team could justify for the problem in front of them. So instead of adding another subscription, the dashboard went where the leads already were — inside WordPress, on the site they were already paying for.</p>
+
+      <div class="outcomes">
+        <span class="outcome"><i><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3l2.7 2.7L10 3.4"/></svg></i>Faster first response</span>
+        <span class="outcome"><i><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3l2.7 2.7L10 3.4"/></svg></i>No duplicate follow-ups</span>
+        <span class="outcome"><i><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3l2.7 2.7L10 3.4"/></svg></i>Conversion tracked end to end</span>
+        <span class="outcome"><i><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3l2.7 2.7L10 3.4"/></svg></i>One shared view for the team</span>
+        <span class="outcome"><i><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3l2.7 2.7L10 3.4"/></svg></i>No recurring software cost</span>
+      </div>
+
+      <p class="story__by">Built by <a href="https://anupkankale.com">Anup Kankale</a>, a WordPress and PHP developer in Mumbai.</p>
+
+      <a class="btn btn--glass" href="https://www.linkedin.com/pulse/travel-agency-losing-leads-i-fixed-without-crm-anup-kankale-13csf/">
+        Read the full story
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M9 7h8v8"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== COMPARISON ============================== -->
+<section class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">The gap this fills</p>
+      <h2>Submissions pile up. Nobody knows what happened to them.</h2>
+      <p class="lede">These are the six things the audit turned up at the travel agency. None of them were the form plugin's fault — a form plugin captures a submission, it was never meant to run a follow-up.</p>
+    </div>
+
+    <div class="compare">
+      <div class="panel glass glass--thin">
+        <p class="eyebrow">What the audit found</p>
+        <h3>Leads in six places</h3>
+        <ul>
+          <li><span class="tick tick--no"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l8 8M10 2l-8 8"/></svg></span> Leads scattered across form entries, inboxes, and spreadsheets</li>
+          <li><span class="tick tick--no"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l8 8M10 2l-8 8"/></svg></span> No record of who had been contacted, or what came of it</li>
+          <li><span class="tick tick--no"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l8 8M10 2l-8 8"/></svg></span> Two reps ringing the same person the same afternoon</li>
+          <li><span class="tick tick--no"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l8 8M10 2l-8 8"/></svg></span> No context when a caller referred back to an earlier enquiry</li>
+          <li><span class="tick tick--no"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l8 8M10 2l-8 8"/></svg></span> No view of lead volume, response time, or conversion</li>
+          <li><span class="tick tick--no"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l8 8M10 2l-8 8"/></svg></span> A CRM subscription costing more than the problem itself</li>
+        </ul>
+      </div>
+
+      <div class="panel glass glass--deep">
+        <p class="eyebrow">What replaced it</p>
+        <h3>A pipeline your team works</h3>
+        <ul>
+          <li><span class="tick tick--yes"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.8 2.8L10 3.5"/></svg></span> Every submission in one list, from Forminator and Contact Form 7</li>
+          <li><span class="tick tick--yes"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.8 2.8L10 3.5"/></svg></span> Six statuses, changed in a click and stamped into the activity log</li>
+          <li><span class="tick tick--yes"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.8 2.8L10 3.5"/></svg></span> Assignment and status visible before anyone picks up the phone</li>
+          <li><span class="tick tick--yes"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.8 2.8L10 3.5"/></svg></span> Every note and past field on one panel, ready to reference</li>
+          <li><span class="tick tick--yes"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.8 2.8L10 3.5"/></svg></span> Charts for volume over time and conversion rate</li>
+          <li><span class="tick tick--yes"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.8 2.8L10 3.5"/></svg></span> Free, and running on the site you already pay for</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== FEATURES ============================== -->
+<section class="band" id="features">
+  <div class="wrap">
+    <div class="section-head section-head--center">
+      <p class="eyebrow">What you get</p>
+      <h2>Everything the follow-up actually needs</h2>
+      <p class="lede">It is a normal WordPress admin page, so there is nothing new to learn and nothing extra to log into.</p>
+    </div>
+
+    <div class="features">
+
+      <div class="feat feat--wide feat--flip glass">
+        <div>
+          <div class="appicon">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+              <path class="solid" d="M3.6 5h16.8l-6.6 7.8v6.4l-3.6 1.8v-8.2z"/>
+              <path d="M3.6 5h16.8l-6.6 7.8v6.4l-3.6 1.8v-8.2z"/>
+            </svg>
+          </div>
+          <h3>All leads, filtered</h3>
+          <p>Page through every lead and narrow by form, status, date range, assignee, or source. Search runs across the submitted data, and a badge on each row tells you which form plugin it came from.</p>
+        </div>
+        <img class="feat__shot" src="https://ps.w.org/devxpert-lead-dashboard-for-forminator/assets/screenshot-2.png?rev=3619428" alt="The All Leads page with filters, search, and source badges" loading="lazy" width="1600" height="1000">
+      </div>
+
+      <div class="feat glass">
+        <div class="appicon">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <rect class="solid" x="4.5" y="13" width="3.6" height="7" rx="1.3"/>
+            <rect class="solid" x="10.2" y="9.5" width="3.6" height="10.5" rx="1.3"/>
+            <rect class="solid" x="15.9" y="5" width="3.6" height="15" rx="1.3"/>
+            <path d="M4.5 20h15"/>
+            <path d="M6.3 13v7M12 9.5v10.5M17.7 5v15"/>
+          </svg>
+        </div>
+        <h3>Dashboard overview</h3>
+        <p>Stat cards for total, new, positive and negative leads plus conversion rate, a leads-over-time chart, a status breakdown, and your top forms.</p>
+      </div>
+
+      <div class="feat glass">
+        <div class="appicon">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path class="solid" d="M13 4.5h5.5a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H13z"/>
+            <rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/>
+            <path d="M13 4.5v15"/>
+            <path d="M6.5 9.5h3.5M6.5 13h2.5"/>
+            <path d="M15.5 9.5h2.5M15.5 13h2.5"/>
+          </svg>
+        </div>
+        <h3>Lead detail panel</h3>
+        <p>Open any lead to see every field it arrived with, switch its status in one click, and read the whole feedback thread alongside the activity log.</p>
+      </div>
+
+      <div class="feat glass">
+        <div class="appicon">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path class="solid" d="M3.5 15.5h17v3a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>
+            <path d="M3.5 14.5v4a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-4"/>
+            <path d="M12 3v10.5"/>
+            <path d="M8.2 10l3.8 3.8L15.8 10"/>
+          </svg>
+        </div>
+        <h3>CSV export</h3>
+        <p>Export leads filtered by form and status. Every field becomes its own column, and the source and form name come along too.</p>
+      </div>
+
+      <div class="feat glass">
+        <div class="appicon">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <circle class="solid" cx="10" cy="8" r="3.8"/>
+            <path class="solid" d="M3 20.2a7 7 0 0 1 14 0z"/>
+            <circle cx="10" cy="8" r="3.8"/>
+            <path d="M3 20.5a7 7 0 0 1 14 0"/>
+            <circle class="dot" cx="18.8" cy="6.2" r="3.2"/>
+            <path d="M18.8 4.8v2.8M17.4 6.2h2.8" stroke="#5e17eb" stroke-width="1.7"/>
+          </svg>
+        </div>
+        <h3>Sales Admin users</h3>
+        <p>Give the role to any existing WordPress user from Settings. They land on the dashboard and see nothing else in wp-admin.</p>
+      </div>
+
+      <div class="feat glass">
+        <div class="appicon">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path class="solid" d="M12 2.8l7.4 2.7v5.4c0 4.5-3.1 8-7.4 9.5-4.3-1.5-7.4-5-7.4-9.5V5.5z"/>
+            <path d="M12 2.8l7.4 2.7v5.4c0 4.5-3.1 8-7.4 9.5-4.3-1.5-7.4-5-7.4-9.5V5.5z"/>
+            <path d="M8.6 12.1l2.5 2.5 4.3-4.7"/>
+          </svg>
+        </div>
+        <h3>Email verification</h3>
+        <p>Optionally send a six-digit code before a Forminator entry counts as a lead. Codes expire in ten minutes and are rate limited.</p>
+      </div>
+
+      <div class="feat glass">
+        <div class="appicon">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path class="solid" d="M3 8.4l8.4 5.4 8.4-5.4v9.1a2 2 0 0 1-2 2h-12.8a2 2 0 0 1-2-2z"/>
+            <rect x="2.6" y="5" width="17.6" height="14.5" rx="2.5"/>
+            <path d="M2.8 7.6l8.6 5.6 8.6-5.6"/>
+            <circle class="dot" cx="19.4" cy="5.6" r="3.1"/>
+          </svg>
+        </div>
+        <h3>New lead emails</h3>
+        <p>Turn on a notification when a lead arrives and choose which address receives it. Off by default.</p>
+      </div>
+
+      <div class="feat glass">
+        <div class="appicon">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <circle class="solid" cx="18.4" cy="5.6" r="3.2"/>
+            <circle class="solid" cx="18.4" cy="18.4" r="3.2"/>
+            <path d="M4.6 12h4a3.5 3.5 0 0 0 3.5-3.5v-.4a2.5 2.5 0 0 1 2.5-2.5h1.6"/>
+            <path d="M4.6 12h4a3.5 3.5 0 0 1 3.5 3.5v.4a2.5 2.5 0 0 0 2.5 2.5h1.6"/>
+            <circle class="dot" cx="4.4" cy="12" r="2.3"/>
+            <circle cx="18.4" cy="5.6" r="3.2"/>
+            <circle cx="18.4" cy="18.4" r="3.2"/>
+          </svg>
+        </div>
+        <h3>Auto-assignment</h3>
+        <p>Route incoming leads to a specific team member automatically, so nothing sits unclaimed.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================== STATUSES ============================== -->
+<section class="band" id="statuses">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">The pipeline</p>
+      <h2>Six statuses, and everyone reads them the same way</h2>
+      <p class="lede">Each change is stamped into the lead's activity log, so you can always see who moved what, and when.</p>
+    </div>
+
+    <div class="spine glass">
+      <div class="node node--new"><b><i></i>New</b><span>Just came in, nobody has looked at it yet.</span></div>
+      <div class="node"><b><i></i>Positive</b><span>Looks like a real opportunity worth chasing.</span></div>
+      <div class="node"><b><i></i>Follow up</b><span>Needs another contact before you can call it.</span></div>
+      <div class="node node--end"><b><i></i>Negative</b><span>Not a fit, or not interested right now.</span></div>
+      <div class="node"><b><i></i>Converted</b><span>They became a customer.</span></div>
+      <div class="node node--end"><b><i></i>Closed</b><span>Finished — no further action needed.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== ROLES ============================== -->
+<section class="band" id="roles">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Access</p>
+      <h2>Give sales the leads, not the whole site</h2>
+    </div>
+
+    <div class="roles">
+      <div class="role glass">
+        <p class="eyebrow">Administrator</p>
+        <h3>Full control</h3>
+        <p>Everything, as usual — plus the lead dashboard and its settings.</p>
+        <ul>
+          <li>Dashboard, all leads, and settings</li>
+          <li>Add or remove Sales Admin users</li>
+          <li>Configure notifications and auto-assignment</li>
+          <li>Export any filtered set to CSV</li>
+        </ul>
+      </div>
+
+      <div class="role role--focus">
+        <p class="eyebrow">Sales Admin</p>
+        <h3>Leads only</h3>
+        <p>Logs in and lands straight on the Lead Dashboard. The rest of WordPress stays out of the way.</p>
+        <ul>
+          <li>View every lead and open its details</li>
+          <li>Update statuses as work progresses</li>
+          <li>Leave rated feedback for the team</li>
+          <li>No posts, plugins, users, or theme access</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== INSTALL ============================== -->
+<section class="band" id="install">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Setup</p>
+      <h2>Installed in about two minutes</h2>
+      <p class="lede">Install it straight from the WordPress plugin directory. Your existing Forminator entries appear immediately; Contact Form 7 leads start saving from activation onward.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step glass">
+        <div class="step__n">1</div>
+        <h3>Have a form plugin</h3>
+        <p>Install Forminator or Contact Form 7. Either one on its own is enough, and both are free.</p>
+      </div>
+      <div class="step glass">
+        <div class="step__n">2</div>
+        <h3>Search the directory</h3>
+        <p>In wp-admin open <code>Plugins → Add New</code> and search for DevXpert Lead Dashboard.</p>
+      </div>
+      <div class="step glass">
+        <div class="step__n">3</div>
+        <h3>Install and activate</h3>
+        <p>Tables are created automatically on activation. There is nothing to configure first.</p>
+      </div>
+      <div class="step glass">
+        <div class="step__n">4</div>
+        <h3>Submit a test entry</h3>
+        <p>Open the new Lead Dashboard menu and your entry shows up there as a new lead.</p>
+      </div>
+    </div>
+
+    <div class="reqs">
+      <span class="req">Version <b>1.1.0</b></span>
+      <span class="req">WordPress <b>5.0+</b>, tested to <b>7.0.2</b></span>
+      <span class="req">PHP <b>7.4+</b></span>
+      <span class="req">Forminator <b>or</b> Contact Form 7</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== CTA ============================== -->
+<section class="wrap">
+  <div class="cta">
+    <p class="eyebrow">Free on the WordPress plugin directory</p>
+    <h2>Put your leads somewhere they get worked.</h2>
+    <p>Install it from the WordPress plugin directory, activate it, and your existing Forminator submissions show up in the dashboard right away.</p>
+    <div class="cta__row">
+      <a class="btn btn--gold" href="https://wordpress.org/plugins/devxpert-lead-dashboard-for-forminator/">Get it on WordPress.org</a>
+      <a class="btn btn--clear" href="https://wordpress.org/support/plugin/devxpert-lead-dashboard-for-forminator/">Visit the support forum</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== FOOTER ============================== -->
+<footer class="footer wrap">
+  <div class="footer__inner glass glass--thin">
+    <a class="brand" href="#top"><span class="brand__mark"><i>LD</i></span><span class="brand__name"><span class="brand__long">DevXpert </span>Lead Dashboard</span></a>
+    <nav class="social" aria-label="Elsewhere">
+
+      <a class="social__btn" href="https://anupkankale.com" title="anupkankale.com" aria-label="Anup Kankale's website">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.7 3.8 5.8 3.8 9S14.5 18.3 12 21c-2.5-2.7-3.8-5.8-3.8-9S9.5 5.7 12 3z"/></svg>
+      </a>
+
+      <a class="social__btn" href="https://profiles.wordpress.org/anupkankale/" title="WordPress.org profile" aria-label="WordPress.org profile">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.4" r="3.9"/><path d="M4.9 20.4a7.1 7.1 0 0 1 14.2 0"/></svg>
+      </a>
+
+      <a class="social__btn" href="https://wordpress.org/plugins/devxpert-lead-dashboard-for-forminator/" title="The plugin on WordPress.org" aria-label="The plugin on WordPress.org">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2.8v4.4M15 2.8v4.4"/><path d="M5.8 7.2h12.4v3.6a6.2 6.2 0 0 1-12.4 0z"/><path d="M12 17v4.2"/></svg>
+      </a>
+
+      <a class="social__btn" href="https://wordpress.org/support/plugin/devxpert-lead-dashboard-for-forminator/" title="Support forum" aria-label="Support forum">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 11.9a7.7 7.7 0 0 1-11.2 6.9l-5 1.4 1.4-4.9a7.7 7.7 0 1 1 14.8-3.4z"/><path d="M9.6 9.9a2.5 2.5 0 1 1 3.4 2.3v1.3"/><path d="M13 16.2h0"/></svg>
+      </a>
+
+      <a class="social__btn social__btn--solid" href="https://github.com/DevXpertLabs/Forminator-Lead-Dashboard-Add-on" title="Source on GitHub" aria-label="Source on GitHub">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38l-.01-1.49C3.73 14.18 3.26 12.7 3.26 12.7c-.36-.92-.89-1.17-.89-1.17-.72-.5.06-.49.06-.49.8.06 1.22.82 1.22.82.71 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48l-.01 2.2c0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      </a>
+
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
