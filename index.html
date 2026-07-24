@@ -64,7 +64,12 @@ html{ scroll-behavior:smooth; -webkit-text-size-adjust:100%; -webkit-tap-highlig
 body{
   margin:0;
   padding-top:104px;
-  background:#fff;
+  background-color:#fff;
+  background-image:
+    linear-gradient(rgba(22, 18, 31, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(94, 23, 235, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px, 40px 40px;
+  animation: moveColumns 40s linear infinite;
   color:var(--ink);
   font-family:var(--sf);
   font-size:17px;
@@ -384,7 +389,7 @@ h1,h2,h3{ margin:0; font-weight:700; line-height:1.06; letter-spacing:-.032em; t
   box-shadow:inset 0 0 0 1px rgba(94,23,235,.12), inset 0 1px 0 rgba(255,255,255,.9);
 }
 .shot--wide{ aspect-ratio:2.1/1; }
-.stage__frame img{ width:100%; border-radius:var(--r-lg); display:block; }
+.stage__frame img{ width:100%; height:auto; border-radius:var(--r-lg); display:block; }
 .feat__shot{ width:100%; border-radius:var(--r-md); display:block; box-shadow:0 1px 2px rgba(38,16,84,.08), 0 18px 40px -24px rgba(38,16,84,.4), inset 0 0 0 .5px rgba(255,255,255,.6); }
 .feat--flip > div:first-child{ order:2; }
 .shot--tall{ aspect-ratio:4/3; }
@@ -644,6 +649,27 @@ h1,h2,h3{ margin:0; font-weight:700; line-height:1.06; letter-spacing:-.032em; t
   .pill{ opacity:1; }
   .pill--follow,.pill--convert{ display:none; }
 }
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes moveColumns {
+  0% { background-position: 0px 0px, 0px 0px; }
+  100% { background-position: 0px 0px, 40px 0px; }
+}
 </style>
 </head>
 
@@ -696,10 +722,10 @@ h1,h2,h3{ margin:0; font-weight:700; line-height:1.06; letter-spacing:-.032em; t
     <div class="hero__panel">
     <article class="card">
     <div class="card__top">
-    <div class="avatar">PR</div>
+    <div class="avatar">MM</div>
     <div>
-    <div class="card__name">Priya Raut</div>
-    <div class="card__form">Contact form — Pricing page</div>
+    <div class="card__name">Matt Mullenweg</div>
+    <div class="card__form">Matt From Wordpress</div>
     </div>
     <div class="statusbox" aria-label="Lead status">
     <span class="pill pill--new">New</span>
@@ -709,15 +735,15 @@ h1,h2,h3{ margin:0; font-weight:700; line-height:1.06; letter-spacing:-.032em; t
     </div>
 
     <dl class="rows">
-    <div class="row"><dt class="label">Email</dt><dd>priya@brightwave.in</dd></div>
-    <div class="row"><dt class="label">Phone</dt><dd>+91 98200 41xxx</dd></div>
-    <div class="row"><dt class="label">Budget</dt><dd>₹1,50,000 – ₹3,00,000</dd></div>
+    <div class="row"><dt class="label">Email</dt><dd>matt@ma.tt</dd></div>
+    <div class="row"><dt class="label">Company</dt><dd>Automattic</dd></div>
+    <div class="row"><dt class="label">Role</dt><dd>CEO</dd></div>
     <div class="row"><dt class="label">Received</dt><dd>2 hours ago</dd></div>
     </dl>
 
     <div class="note">
     <span class="note__who">Sales feedback · positive</span>
-    <p>Called back same day. Wants a demo on Thursday, decision maker is on the call.</p>
+    <p>Interested in dashboard integration. Wants a demo.</p>
     </div>
     </article>
 
@@ -734,7 +760,7 @@ h1,h2,h3{ margin:0; font-weight:700; line-height:1.06; letter-spacing:-.032em; t
 <!-- ============================== DASHBOARD SHOT ============================== -->
 <section class="wrap stage">
   <div class="stage__frame">
-    <img src="images/dashboard.png" alt="The Lead Dashboard running in WordPress: stat cards for total, new, positive and negative leads, a leads-over-time chart, and a leads-by-status donut" width="1888" height="874">
+    <img src="images/dashboard.png" alt="The Lead Dashboard running in WordPress: stat cards for total, new, positive and negative leads, a leads-over-time chart, and a leads-by-status donut" width="1685" height="822">
   </div>
 </section>
 
@@ -815,18 +841,15 @@ h1,h2,h3{ margin:0; font-weight:700; line-height:1.06; letter-spacing:-.032em; t
 
     <div class="features">
 
-      <div class="feat feat--wide feat--flip glass">
-        <div>
-          <div class="appicon">
-            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-              <path class="solid" d="M3.6 5h16.8l-6.6 7.8v6.4l-3.6 1.8v-8.2z"/>
-              <path d="M3.6 5h16.8l-6.6 7.8v6.4l-3.6 1.8v-8.2z"/>
-            </svg>
-          </div>
-          <h3>All leads, filtered</h3>
-          <p>Page through every lead and narrow by form, status, date range, assignee, or source. Search runs across the submitted data, and a badge on each row tells you which form plugin it came from.</p>
+      <div class="feat glass">
+        <div class="appicon">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path class="solid" d="M3.6 5h16.8l-6.6 7.8v6.4l-3.6 1.8v-8.2z"/>
+            <path d="M3.6 5h16.8l-6.6 7.8v6.4l-3.6 1.8v-8.2z"/>
+          </svg>
         </div>
-        <img class="feat__shot" src="https://ps.w.org/devxpert-lead-dashboard-for-forminator/assets/screenshot-2.png?rev=3619428" alt="The All Leads page with filters, search, and source badges" loading="lazy" width="1600" height="1000">
+        <h3>All leads, filtered</h3>
+        <p>Page through every lead and narrow by form, status, date range, assignee, or source. Search runs across the submitted data, and a badge on each row tells you which form plugin it came from.</p>
       </div>
 
       <div class="feat glass">
@@ -1043,7 +1066,7 @@ h1,h2,h3{ margin:0; font-weight:700; line-height:1.06; letter-spacing:-.032em; t
 <!-- ============================== FOOTER ============================== -->
 <footer class="footer wrap">
   <div class="footer__inner glass glass--thin">
-    <a class="brand" href="#top"><span class="brand__mark"><i>LD</i></span><span class="brand__name"><span class="brand__long">DevXpert </span>Lead Dashboard</span></a>
+    <a class="brand" href="#top"><span class="brand__mark"></span><span class="brand__name"><span class="brand__long">DevXpert </span>Lead Dashboard</span></a>
     <nav class="social" aria-label="Elsewhere">
 
       <a class="social__btn" href="https://anupkankale.com" title="anupkankale.com" aria-label="Anup Kankale's website">
@@ -1069,6 +1092,27 @@ h1,h2,h3{ margin:0; font-weight:700; line-height:1.06; letter-spacing:-.032em; t
     </nav>
   </div>
 </footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+        }
+      });
+    }, {
+      threshold: 0.05,
+      rootMargin: '0px 0px -45px 0px'
+    });
+
+    // Observe below-the-fold content sections for fade-in animations
+    document.querySelectorAll('.band, .stage__frame').forEach(el => {
+      el.classList.add('reveal');
+      observer.observe(el);
+    });
+  });
+</script>
 
 </body>
 </html>
