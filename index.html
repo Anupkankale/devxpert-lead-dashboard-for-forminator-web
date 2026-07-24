@@ -178,15 +178,6 @@ h1,h2,h3{ margin:0; font-weight:700; line-height:1.06; letter-spacing:-.032em; t
 .brand{ display:flex; align-items:center; gap:11px; min-height:44px; font-size:16px; font-weight:600; letter-spacing:-.02em; min-width:0; }
 .brand__name{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .nav__cta{ margin-left:8px; flex:none; }
-.brand__mark{
-  width:30px; height:30px; flex:none; border-radius:9px;
-  background:linear-gradient(165deg, var(--violet-lift), var(--violet) 52%, var(--violet-deep));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), inset 0 -3px 8px rgba(0,0,0,.22), 0 4px 10px -3px rgba(94,23,235,.6);
-  display:grid; place-items:center; position:relative; overflow:hidden;
-}
-.brand__mark::after{ content:""; position:absolute; inset:0; background:linear-gradient(155deg, rgba(255,255,255,.55), rgba(255,255,255,.05) 42%, transparent 60%); }
-.brand__mark i{ position:relative; z-index:1; font-style:normal; color:#fff; font-size:12px; font-weight:700; letter-spacing:-.02em; }
-
 .nav__links{ display:flex; align-items:center; gap:4px; margin-left:auto; }
 .nav__links a{
   font-size:15px; font-weight:500; color:var(--ink-2);
@@ -602,8 +593,7 @@ h1,h2,h3{ margin:0; font-weight:700; line-height:1.06; letter-spacing:-.032em; t
   .nav{ top:10px; padding-inline:16px; }
   .nav__bar{ height:56px; padding:0 6px 0 14px; }
   .brand{ font-size:15px; }
-  .brand__mark{ width:28px; height:28px; border-radius:8px; }
-
+  
   .hero{ padding:36px 0 0; }
   .hero__grid{ gap:34px; }
   .hero h1{ font-size:clamp(31px,8.6vw,42px); }
@@ -664,7 +654,7 @@ h1,h2,h3{ margin:0; font-weight:700; line-height:1.06; letter-spacing:-.032em; t
   <input type="checkbox" id="navtoggle" class="navtoggle" aria-label="Show menu">
 
   <div class="nav__bar">
-    <a class="brand" href="#top"><span class="brand__mark"><i>LD</i></span><span class="brand__name"><span class="brand__long">DevXpert </span>Lead Dashboard</span></a>
+    </span>Lead Dashboard</span></a>
     <nav class="nav__links">
       <a href="#features">Features</a>
       <a href="#statuses">Statuses</a>
